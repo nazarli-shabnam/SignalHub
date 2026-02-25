@@ -1,0 +1,23 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* When Clerk sign-up shows a validation error: hide spinner so button doesn't look stuck */
+.cl-card form:has(.cl-formFieldError) .cl-formButtonPrimary svg {
+  display: none;
+}
+/* Button is disabled by SignUpFormGuard when error is shown; keep it visually distinct */
+.cl-card form:has(.cl-formFieldError) .cl-formButtonPrimary:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* Better contrast for Clerk auth pages */
+.cl-footer,
+.cl-footer p,
+.cl-formFieldHint {
+  color: rgb(212 212 212) !important;
+}
+.cl-socialButtonsBlockButton {
+  color: #fff !important;
+}

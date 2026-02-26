@@ -17,6 +17,7 @@
     "@prisma/client": "^5.22.0",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.0",
+    "livekit-server-sdk": "^2.15.0",
     "lucide-react": "^0.460.0",
     "next": "^16.1.6",
     "react": "^18.3.0",

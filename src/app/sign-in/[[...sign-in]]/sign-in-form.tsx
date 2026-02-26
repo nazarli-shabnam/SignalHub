@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useSignIn, useClerk } from "@clerk/nextjs";
+import { useSignIn } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Input } from "@/components/ui/input";
@@ -11,7 +11,6 @@ const AFTER_SIGN_IN = "/dashboard";
 
 export function SignInForm() {
   const { signIn, setActive: setActiveSession, isLoaded } = useSignIn();
-  const { signIn: clerkSignIn } = useClerk();
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -56,8 +55,8 @@ export function SignInForm() {
   }
 
   function handleGoogleSignIn() {
-    if (!clerkSignIn) return;
-    clerkSignIn.authenticateWithRedirect({
+    if (!isLoaded || !signIn) return;
+    signIn.authenticateWithRedirect({
       strategy: "oauth_google",
       redirectUrl: "/sso-callback",
       redirectUrlComplete: AFTER_SIGN_IN,

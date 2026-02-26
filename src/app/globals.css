@@ -1,0 +1,30 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.cl-card form:has(.cl-formFieldError) .cl-formButtonPrimary svg {
+  display: none;
+}
+.cl-card form:has(.cl-formFieldError) .cl-formButtonPrimary:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.cl-footer,
+.cl-footer p,
+.cl-formFieldHint,
+.cl-formFieldLabel,
+.cl-dividerText {
+  color: rgb(228 228 231) !important; /* zinc-200 */
+}
+.cl-socialButtonsBlockButton {
+  color: #fff !important;
+}
+.cl-card {
+  color: rgb(244 244 245);
+}
+.cl-card .cl-formFieldLabel,
+.cl-card [class*="formField"] label,
+.cl-card [class*="footer"] {
+  color: rgb(228 228 231) !important;
+}

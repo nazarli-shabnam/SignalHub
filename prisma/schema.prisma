@@ -1,0 +1,30 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String       @id @default(cuid())
+  clerkId   String       @unique
+  email     String?
+  name      String?
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+  meetups   MeetupRoom[]
+}
+
+model MeetupRoom {
+  id               String   @id @default(cuid())
+  title            String
+  livekitRoomName  String?  // e.g. "meetup-{id}" for Phase 2
+  hostId           String
+  host             User     @relation(fields: [hostId], references: [id], onDelete: Cascade)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([hostId])
+}

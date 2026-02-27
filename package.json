@@ -10,13 +10,17 @@
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
     "db:migrate": "prisma migrate dev",
-    "db:studio": "prisma studio"
+    "db:studio": "prisma studio",
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@clerk/nextjs": "^6.38.2",
+    "@livekit/components-react": "^2.9.20",
+    "@livekit/components-styles": "^1.2.0",
     "@prisma/client": "^5.22.0",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.0",
+    "livekit-client": "^2.17.2",
     "livekit-server-sdk": "^2.15.0",
     "lucide-react": "^0.460.0",
     "next": "^16.1.6",

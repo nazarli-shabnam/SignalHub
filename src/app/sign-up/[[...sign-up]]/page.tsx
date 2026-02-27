@@ -57,6 +57,14 @@ export default function SignUpPage() {
                   colorBackground: "#18181b",
                   colorInputBackground: "#27272a",
                   colorInputText: "#fafafa",
+<<<<<<< HEAD
+                  colorText: "#e4e4e7",
+                  colorTextSecondary: "#a1a1aa",
+                  colorSuccess: "#4ade80",
+                  colorWarning: "#fbbf24",
+                  colorDanger: "#f87171",
+=======
+>>>>>>> b9858d85418066245b9bd631061abc82b640b719
                   borderRadius: "0.5rem",
                 },
               }}

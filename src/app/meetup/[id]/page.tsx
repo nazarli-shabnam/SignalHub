@@ -2,8 +2,9 @@ import { getOrCreateCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { User, Users, ArrowLeft, Video } from "lucide-react";
+import { User, Users, ArrowLeft } from "lucide-react";
 import { CopyMeetupLinkButton } from "./copy-meetup-link-button";
+import { MeetupVideoRoom } from "./meetup-video-room";
 
 type Props = { params: Promise<{ id: string }> };
 
@@ -21,87 +22,57 @@ export default async function MeetupPage({ params }: Props) {
 
   const isHost = meetup.hostId === user.id;
   const hostLabel = meetup.host.name ?? meetup.host.email ?? "Host";
+  const userName = user.name ?? user.email ?? "";
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100 flex flex-col">
-      <header className="border-b border-zinc-800 px-4 sm:px-6 py-4 flex items-center justify-between shrink-0">
+    <div className="h-dvh bg-zinc-950 text-zinc-100 flex flex-col overflow-hidden">
+      <header className="border-b border-zinc-800/60 px-4 sm:px-6 py-2.5 flex items-center gap-4 shrink-0 bg-zinc-950/80 backdrop-blur-sm">
         <Link
           href="/dashboard"
-          className="flex items-center gap-2 text-zinc-400 hover:text-zinc-100 transition-colors text-sm font-medium"
+          className="flex items-center gap-1.5 text-zinc-500 hover:text-zinc-200 transition-colors text-sm font-medium shrink-0"
         >
           <ArrowLeft className="h-4 w-4" />
-          Dashboard
+          <span className="hidden sm:inline">Back</span>
         </Link>
-        <Link
-          href="/dashboard"
-          className="text-lg font-semibold text-emerald-400 hover:text-emerald-300"
-        >
-          SignalHub
-        </Link>
-        <div className="w-20" aria-hidden />
+
+        <div className="h-4 w-px bg-zinc-800 shrink-0 hidden sm:block" />
+
+        <div className="flex-1 min-w-0 flex items-center gap-3">
+          <h1 className="text-sm font-semibold truncate text-zinc-200">
+            {meetup.title}
+          </h1>
+          <span className="text-zinc-600 text-xs shrink-0 hidden sm:inline">
+            {hostLabel}
+          </span>
+        </div>
+
+        <div className="flex items-center gap-2 shrink-0">
+          <div
+            className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${
+              isHost
+                ? "bg-emerald-500/10 text-emerald-400 ring-1 ring-emerald-500/20"
+                : "bg-zinc-800/80 text-zinc-400 ring-1 ring-zinc-700/50"
+            }`}
+          >
+            {isHost ? (
+              <User className="h-3 w-3" />
+            ) : (
+              <Users className="h-3 w-3" />
+            )}
+            {isHost ? "Host" : "Viewer"}
+          </div>
+          {isHost && (
+            <CopyMeetupLinkButton
+              meetupId={meetup.id}
+              title={meetup.title}
+              className="h-8 rounded-lg text-xs px-3 gap-1.5 border-zinc-700/50 bg-zinc-900 text-zinc-300 hover:bg-zinc-800 hover:text-zinc-100"
+            />
+          )}
+        </div>
       </header>
 
-      <main className="flex-1 flex flex-col items-center justify-center p-6">
-        <div className="w-full max-w-md space-y-6">
-          <div className="rounded-2xl border border-zinc-800 bg-zinc-900/80 p-6 sm:p-8 shadow-xl">
-            <div className="flex items-start justify-between gap-4 mb-6">
-              <div>
-                <h1 className="text-2xl sm:text-3xl font-bold text-zinc-100 tracking-tight">
-                  {meetup.title}
-                </h1>
-                <p className="text-zinc-500 text-sm mt-1">
-                  {new Date(meetup.createdAt).toLocaleDateString(undefined, {
-                    dateStyle: "medium",
-                  })}
-                  {" · "}
-                  {hostLabel}
-                </p>
-              </div>
-              <div
-                className={`shrink-0 inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-sm font-medium ${
-                  isHost
-                    ? "bg-emerald-500/20 text-emerald-400 ring-1 ring-emerald-500/30"
-                    : "bg-zinc-700/60 text-zinc-300 ring-1 ring-zinc-600"
-                }`}
-              >
-                {isHost ? (
-                  <User className="h-4 w-4" />
-                ) : (
-                  <Users className="h-4 w-4" />
-                )}
-                {isHost ? "Host" : "Viewer"}
-              </div>
-            </div>
-
-            <div className="rounded-xl border border-dashed border-zinc-700 bg-zinc-800/40 p-5 text-center">
-              <Video className="h-10 w-10 text-zinc-500 mx-auto mb-3" />
-              <p className="text-zinc-400 text-sm">
-                Video room (Phase 2) will appear here. You’re in as{" "}
-                <span className="text-zinc-300 font-medium">
-                  {isHost ? "Host" : "Viewer"}
-                </span>
-                .
-              </p>
-            </div>
-
-            <div className="mt-6 flex flex-col sm:flex-row gap-3">
-              <Link
-                href="/dashboard"
-                className="flex-1 inline-flex items-center justify-center gap-2 h-11 rounded-xl font-medium bg-emerald-600 hover:bg-emerald-500 text-white transition-colors"
-              >
-                <ArrowLeft className="h-4 w-4" />
-                Back to Dashboard
-              </Link>
-              {isHost && (
-                <CopyMeetupLinkButton
-                  meetupId={meetup.id}
-                  title={meetup.title}
-                  className="flex-1 h-11 rounded-xl font-medium gap-2 border-zinc-600 bg-zinc-800 text-zinc-100 hover:bg-zinc-700 hover:text-white"
-                />
-              )}
-            </div>
-          </div>
-        </div>
+      <main className="flex-1 min-h-0 overflow-hidden">
+        <MeetupVideoRoom meetupId={meetup.id} defaultName={userName} />
       </main>
     </div>
   );

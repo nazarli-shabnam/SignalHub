@@ -1,0 +1,7 @@
+-- AlterTable: drop webinar mode, add per-meeting settings
+ALTER TABLE "MeetupRoom" DROP COLUMN IF EXISTS "mode";
+
+ALTER TABLE "MeetupRoom" ADD COLUMN IF NOT EXISTS "allowCamera" BOOLEAN NOT NULL DEFAULT true;
+ALTER TABLE "MeetupRoom" ADD COLUMN IF NOT EXISTS "allowMic" BOOLEAN NOT NULL DEFAULT true;
+ALTER TABLE "MeetupRoom" ADD COLUMN IF NOT EXISTS "allowScreenShare" BOOLEAN NOT NULL DEFAULT true;
+ALTER TABLE "MeetupRoom" ADD COLUMN IF NOT EXISTS "allowChat" BOOLEAN NOT NULL DEFAULT true;

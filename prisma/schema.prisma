@@ -20,7 +20,16 @@ model User {
 model MeetupRoom {
   id               String   @id @default(cuid())
   title            String
+<<<<<<< HEAD
+  allowCamera      Boolean  @default(true)
+  allowMic         Boolean  @default(true)
+  allowScreenShare Boolean  @default(true)
+  allowChat                 Boolean  @default(true)
+  allowParticipantRecording Boolean  @default(false)
+  livekitRoomName           String?
+=======
   livekitRoomName  String?  // e.g. "meetup-{id}" for Phase 2
+>>>>>>> b9858d85418066245b9bd631061abc82b640b719
   hostId           String
   host             User     @relation(fields: [hostId], references: [id], onDelete: Cascade)
   createdAt        DateTime @default(now())

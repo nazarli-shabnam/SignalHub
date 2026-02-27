@@ -2,6 +2,90 @@
 @tailwind components;
 @tailwind utilities;
 
+<<<<<<< HEAD
+@layer base {
+  body {
+    @apply bg-zinc-950 text-zinc-100;
+  }
+}
+
+[data-lk-theme="default"] {
+  --lk-bg: #09090b;
+  --lk-bg2: #18181b;
+  --lk-control-bg: #1c1c20;
+  --lk-control-hover-bg: #2a2a30;
+  --lk-fg: #e4e4e7;
+  --lk-border-color: #27272a;
+  height: 100%;
+}
+[data-lk-theme="default"] .lk-video-conference {
+  height: 100%;
+}
+[data-lk-theme="default"] .lk-control-bar {
+  border-top: 1px solid #27272a;
+  background: #111113;
+}
+
+[data-lk-theme="default"] .lk-chat {
+  background: #111113;
+  border-left: 1px solid #27272a;
+}
+[data-lk-theme="default"] .lk-chat-form {
+  background: #18181b;
+  border-top: 1px solid #27272a;
+}
+[data-lk-theme="default"] .lk-chat-form-input {
+  background: #27272a;
+  color: #e4e4e7;
+  border-color: #3f3f46;
+  resize: none;
+  min-height: 2.25rem;
+  max-height: 6rem;
+  overflow-y: auto;
+  line-height: 1.4;
+  padding: 0.375rem 0.5rem;
+  font-family: inherit;
+  font-size: inherit;
+}
+[data-lk-theme="default"] .lk-chat-form-input::placeholder {
+  color: #71717a;
+}
+[data-lk-theme="default"] .lk-chat-form-button {
+  color: #a1a1aa;
+}
+[data-lk-theme="default"] .lk-chat-form-button:hover {
+  color: #e4e4e7;
+}
+[data-lk-theme="default"] .lk-chat-entry {
+  border-bottom-color: #27272a;
+}
+[data-lk-theme="default"] .lk-chat-entry .lk-meta-data .lk-participant-name {
+  color: #d4d4d8;
+}
+[data-lk-theme="default"] .lk-chat-entry .lk-meta-data .lk-timestamp {
+  color: #71717a;
+}
+[data-lk-theme="default"] .lk-chat-entry .lk-message-body {
+  color: #a1a1aa;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+[data-lk-theme="default"] video {
+  transform: none !important;
+}
+
+@keyframes bounce-once {
+  0%, 100% { transform: translateY(0); }
+  30% { transform: translateY(-6px); }
+  60% { transform: translateY(-2px); }
+}
+.animate-bounce-once {
+  animation: bounce-once 0.5s ease-out 1;
+}
+
+=======
+>>>>>>> b9858d85418066245b9bd631061abc82b640b719
 .cl-card form:has(.cl-formFieldError) .cl-formButtonPrimary svg {
   display: none;
 }
@@ -9,22 +93,64 @@
   opacity: 0.7;
   cursor: not-allowed;
 }
+<<<<<<< HEAD
+=======
 
+>>>>>>> b9858d85418066245b9bd631061abc82b640b719
 .cl-footer,
 .cl-footer p,
 .cl-formFieldHint,
 .cl-formFieldLabel,
 .cl-dividerText {
+<<<<<<< HEAD
+  color: rgb(212 212 216) !important;
+=======
   color: rgb(228 228 231) !important; /* zinc-200 */
+>>>>>>> b9858d85418066245b9bd631061abc82b640b719
 }
 .cl-socialButtonsBlockButton {
   color: #fff !important;
 }
 .cl-card {
+<<<<<<< HEAD
+  color: rgb(228 228 231);
+=======
   color: rgb(244 244 245);
+>>>>>>> b9858d85418066245b9bd631061abc82b640b719
 }
 .cl-card .cl-formFieldLabel,
 .cl-card [class*="formField"] label,
 .cl-card [class*="footer"] {
+<<<<<<< HEAD
+  color: rgb(212 212 216) !important;
+}
+
+.cl-formFieldHintText,
+.cl-formFieldSuccessText,
+.cl-formFieldWarningText {
+  color: rgb(161 161 170) !important; /* zinc-400 */
+}
+.cl-formFieldSuccessText {
+  color: rgb(74 222 128) !important; /* green-400: bright enough on dark bg */
+}
+.cl-formFieldWarningText {
+  color: rgb(251 191 36) !important; /* amber-400 */
+}
+.cl-card [data-state="checked"] {
+  color: rgb(74 222 128) !important;
+}
+.cl-card [data-state="unchecked"] {
+  color: rgb(161 161 170) !important;
+}
+.cl-card [class*="unstyledList"] li,
+.cl-card [class*="passwordField"] [class*="text"],
+.cl-card [class*="fieldMessage"] {
+  color: rgb(161 161 170) !important;
+}
+.cl-card [class*="unstyledList"] li[data-valid="true"],
+.cl-card [class*="unstyledList"] li[class*="success"] {
+  color: rgb(74 222 128) !important;
+=======
   color: rgb(228 228 231) !important;
+>>>>>>> b9858d85418066245b9bd631061abc82b640b719
 }

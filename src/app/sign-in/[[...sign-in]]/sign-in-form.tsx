@@ -74,6 +74,7 @@ export function SignInForm() {
         <button
           type="button"
           onClick={handleGoogleSignIn}
+          aria-label="Continue with Google"
           className="w-full bg-zinc-700 border border-zinc-600 hover:bg-zinc-600 text-white rounded-lg font-medium h-11 flex items-center justify-center gap-2 mb-4"
         >
           <svg className="w-5 h-5" viewBox="0 0 24 24">
@@ -90,7 +91,7 @@ export function SignInForm() {
             <div className="w-full border-t border-zinc-600" />
           </div>
           <div className="relative flex justify-center text-xs">
-            <span className="bg-zinc-900 px-2 text-zinc-300">or</span>
+            <span className="bg-zinc-900/90 px-2 text-zinc-300">or</span>
           </div>
         </div>
 
@@ -124,7 +125,7 @@ export function SignInForm() {
             />
           </div>
           {error && (
-            <p className="text-red-400 text-sm">{error}</p>
+            <p className="text-red-400 text-sm" role="alert">{error}</p>
           )}
           <Button
             type="submit"

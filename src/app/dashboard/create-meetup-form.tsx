@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+<<<<<<< HEAD
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -48,6 +49,18 @@ export function CreateMeetupForm() {
     setSettings((prev) => ({ ...prev, [key]: !prev[key] }));
   }
 
+=======
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+
+const DEFAULT_ERROR = "Something went wrong. Please try again.";
+
+export function CreateMeetupForm() {
+  const [title, setTitle] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+>>>>>>> b9858d85418066245b9bd631061abc82b640b719
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!title.trim() || isSubmitting) return;
@@ -57,12 +70,20 @@ export function CreateMeetupForm() {
       const res = await fetch("/api/meetups", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+<<<<<<< HEAD
         body: JSON.stringify({ title: title.trim(), ...settings }),
+=======
+        body: JSON.stringify({ title: title.trim() }),
+>>>>>>> b9858d85418066245b9bd631061abc82b640b719
       });
       if (res.ok) {
         const data = (await res.json()) as { id?: string };
         if (data?.id) {
+<<<<<<< HEAD
           router.push(`/meetup/${data.id}`);
+=======
+          window.location.href = `/meetup/${data.id}`;
+>>>>>>> b9858d85418066245b9bd631061abc82b640b719
           return;
         }
         setError(DEFAULT_ERROR);
@@ -79,7 +100,11 @@ export function CreateMeetupForm() {
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-2">
+<<<<<<< HEAD
       <div className="flex items-center gap-2">
+=======
+      <div className="flex gap-2">
+>>>>>>> b9858d85418066245b9bd631061abc82b640b719
         <Input
           type="text"
           placeholder="Meetup title"
@@ -93,6 +118,7 @@ export function CreateMeetupForm() {
           aria-invalid={!!error}
           aria-describedby={error ? "create-meetup-error" : undefined}
         />
+<<<<<<< HEAD
 
         <button
           type="button"
@@ -107,10 +133,13 @@ export function CreateMeetupForm() {
           <Settings2 className="h-4 w-4" />
         </button>
 
+=======
+>>>>>>> b9858d85418066245b9bd631061abc82b640b719
         <Button type="submit" disabled={isSubmitting || !title.trim()}>
           {isSubmitting ? "Creating…" : "Create"}
         </Button>
       </div>
+<<<<<<< HEAD
 
       {showSettings && (
         <div className="flex items-center gap-1 flex-wrap mt-1">
@@ -135,6 +164,8 @@ export function CreateMeetupForm() {
         </div>
       )}
 
+=======
+>>>>>>> b9858d85418066245b9bd631061abc82b640b719
       {error && (
         <p id="create-meetup-error" className="text-sm text-red-400" role="alert">
           {error}

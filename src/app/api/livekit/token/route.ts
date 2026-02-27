@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import { auth } from "@clerk/nextjs/server";
 import { getOrCreateCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { AccessToken } from "livekit-server-sdk";
@@ -10,24 +9,20 @@ const LIVEKIT_API_SECRET = process.env.LIVEKIT_API_SECRET;
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const meetupId = searchParams.get("meetupId");
+  const displayName = searchParams.get("displayName")?.trim() || "";
 
   if (!meetupId?.trim()) {
     return NextResponse.json(
       { error: "meetupId is required" },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
   if (!LIVEKIT_API_KEY || !LIVEKIT_API_SECRET) {
     return NextResponse.json(
       { error: "LiveKit is not configured (missing API key or secret)" },
-      { status: 503 }
+      { status: 503 },
     );
-  }
-
-  const clerkUserId = await auth().then((a) => a.userId);
-  if (!clerkUserId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const user = await getOrCreateCurrentUser();
@@ -37,7 +32,16 @@ export async function GET(request: Request) {
 
   const meetup = await prisma.meetupRoom.findUnique({
     where: { id: meetupId.trim() },
-    select: { id: true, hostId: true, title: true },
+    select: {
+      id: true,
+      hostId: true,
+      title: true,
+      allowCamera: true,
+      allowMic: true,
+      allowScreenShare: true,
+      allowChat: true,
+      allowParticipantRecording: true,
+    },
   });
 
   if (!meetup) {
@@ -46,17 +50,20 @@ export async function GET(request: Request) {
 
   const roomName = `meetup-${meetup.id}`;
   const isHost = meetup.hostId === user.id;
+  const canPublish = meetup.allowCamera || meetup.allowMic;
+  const participantName =
+    displayName || user.name || user.email || user.clerkId;
 
   const token = new AccessToken(LIVEKIT_API_KEY, LIVEKIT_API_SECRET, {
-    identity: clerkUserId,
-    name: user.name ?? user.email ?? clerkUserId,
+    identity: user.clerkId,
+    name: participantName,
     ttl: "2h",
   });
 
   token.addGrant({
     roomJoin: true,
     room: roomName,
-    canPublish: isHost,
+    canPublish,
     canSubscribe: true,
     canPublishData: true,
   });
@@ -67,5 +74,12 @@ export async function GET(request: Request) {
     token: jwt,
     roomName,
     isHost,
+    settings: {
+      allowCamera: meetup.allowCamera,
+      allowMic: meetup.allowMic,
+      allowScreenShare: meetup.allowScreenShare,
+      allowChat: meetup.allowChat,
+      allowParticipantRecording: meetup.allowParticipantRecording,
+    },
   });
 }

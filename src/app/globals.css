@@ -2,7 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-<<<<<<< HEAD
 @layer base {
   body {
     @apply bg-zinc-950 text-zinc-100;
@@ -84,8 +83,6 @@
   animation: bounce-once 0.5s ease-out 1;
 }
 
-=======
->>>>>>> b9858d85418066245b9bd631061abc82b640b719
 .cl-card form:has(.cl-formFieldError) .cl-formButtonPrimary svg {
   display: none;
 }
@@ -93,48 +90,35 @@
   opacity: 0.7;
   cursor: not-allowed;
 }
-<<<<<<< HEAD
-=======
-
->>>>>>> b9858d85418066245b9bd631061abc82b640b719
 .cl-footer,
 .cl-footer p,
 .cl-formFieldHint,
 .cl-formFieldLabel,
 .cl-dividerText {
-<<<<<<< HEAD
   color: rgb(212 212 216) !important;
-=======
-  color: rgb(228 228 231) !important; /* zinc-200 */
->>>>>>> b9858d85418066245b9bd631061abc82b640b719
 }
 .cl-socialButtonsBlockButton {
   color: #fff !important;
 }
 .cl-card {
-<<<<<<< HEAD
   color: rgb(228 228 231);
-=======
-  color: rgb(244 244 245);
->>>>>>> b9858d85418066245b9bd631061abc82b640b719
 }
 .cl-card .cl-formFieldLabel,
 .cl-card [class*="formField"] label,
 .cl-card [class*="footer"] {
-<<<<<<< HEAD
   color: rgb(212 212 216) !important;
 }
 
 .cl-formFieldHintText,
 .cl-formFieldSuccessText,
 .cl-formFieldWarningText {
-  color: rgb(161 161 170) !important; /* zinc-400 */
+  color: rgb(161 161 170) !important;
 }
 .cl-formFieldSuccessText {
-  color: rgb(74 222 128) !important; /* green-400: bright enough on dark bg */
+  color: rgb(74 222 128) !important;
 }
 .cl-formFieldWarningText {
-  color: rgb(251 191 36) !important; /* amber-400 */
+  color: rgb(251 191 36) !important;
 }
 .cl-card [data-state="checked"] {
   color: rgb(74 222 128) !important;
@@ -150,7 +134,4 @@
 .cl-card [class*="unstyledList"] li[data-valid="true"],
 .cl-card [class*="unstyledList"] li[class*="success"] {
   color: rgb(74 222 128) !important;
-=======
-  color: rgb(228 228 231) !important;
->>>>>>> b9858d85418066245b9bd631061abc82b640b719
 }

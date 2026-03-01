@@ -15,7 +15,6 @@ import {
   FocusLayout,
   FocusLayoutContainer,
   CarouselLayout,
-  ControlBar,
   RoomAudioRenderer,
   ConnectionStateToast,
   ParticipantTile,
@@ -26,6 +25,10 @@ import {
   useDataChannel,
   useLocalParticipant,
   useMaybeTrackRefContext,
+  useMaybeLayoutContext,
+  useTrackToggle,
+  useDisconnectButton,
+  useMediaDeviceSelect,
   isTrackReference,
 } from "@livekit/components-react";
 import type {
@@ -34,6 +37,29 @@ import type {
 } from "@livekit/components-core";
 import { isEqualTrackRef, isWeb } from "@livekit/components-core";
 import { RoomEvent, Track } from "livekit-client";
+
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Mic,
+  MicOff,
+  Video,
+  VideoOff,
+  MonitorUp,
+  MessageSquare,
+  PhoneOff,
+  ChevronDown,
+  Hand,
+} from "lucide-react";
 import { CustomChat } from "./custom-chat";
 
 
@@ -151,7 +177,7 @@ function TileWithHand() {
   const raised = identity ? raisedHands.has(identity) : false;
 
   return (
-    <div className="relative">
+    <div className="relative w-full h-full min-h-0 min-w-0">
       <ParticipantTile />
       {raised && (
         <span className="absolute top-2 right-2 text-xl leading-none select-none pointer-events-none animate-bounce-once">
@@ -314,45 +340,34 @@ function VideoLayout({
         value={layoutContext}
         onWidgetChange={setWidgetState}
       >
-        <div className="lk-video-conference-inner">
-          {!focusTrack ? (
-            <div className="lk-grid-layout-wrapper">
-              <GridLayout tracks={tracks}>
-                <TileWithHand />
-              </GridLayout>
-            </div>
-          ) : (
-            <div className="lk-focus-layout-wrapper">
-              <FocusLayoutContainer>
-                <CarouselLayout key={focusKey} tracks={carouselTracks}>
+        <div className="flex flex-1 min-h-0 overflow-hidden">
+          <div className="lk-video-conference-inner">
+            {!focusTrack ? (
+              <div className="lk-grid-layout-wrapper">
+                <GridLayout tracks={tracks}>
                   <TileWithHand />
-                </CarouselLayout>
-                {focusTrack && <FocusLayout trackRef={focusTrack} />}
-              </FocusLayoutContainer>
-            </div>
-          )}
-          <div className="relative">
-            <ControlBar
-              controls={{
-                camera: settings.allowCamera,
-                microphone: settings.allowMic,
-                screenShare: settings.allowScreenShare,
-                chat: settings.allowChat,
+                </GridLayout>
+              </div>
+            ) : (
+              <div className="lk-focus-layout-wrapper">
+                <FocusLayoutContainer>
+                  <CarouselLayout key={focusKey} tracks={carouselTracks}>
+                    <TileWithHand />
+                  </CarouselLayout>
+                  {focusTrack && <FocusLayout trackRef={focusTrack} />}
+                </FocusLayoutContainer>
+              </div>
+            )}
+            <CustomControlBar settings={settings} canRecord={canRecord} />
+          </div>
+          {settings.allowChat && (
+            <CustomChat
+              style={{
+                display: widgetState.showChat ? "flex" : "none",
               }}
             />
-            <div className="absolute right-3 top-0 bottom-0 flex items-center gap-1 z-10">
-              {canRecord && <RecordButton />}
-              <RaiseHandBarButton />
-            </div>
-          </div>
+          )}
         </div>
-        {settings.allowChat && (
-          <CustomChat
-            style={{
-              display: widgetState.showChat ? "grid" : "none",
-            }}
-          />
-        )}
       </LayoutContextProvider>
       {micDisabled && isHost && (
         <GrantMicPanel meetupId={meetupId} />
@@ -363,22 +378,233 @@ function VideoLayout({
   );
 }
 
+const ctrlBtn =
+  "flex items-center justify-center gap-1.5 h-9 rounded-xl text-[13px] font-medium transition-all duration-150 select-none whitespace-nowrap";
+const ctrlPill = `${ctrlBtn} px-3.5`;
+const ctrlOn = "bg-zinc-700/80 text-white hover:bg-zinc-600/80";
+const ctrlOff =
+  "bg-transparent text-zinc-400 hover:bg-zinc-800/80 hover:text-zinc-200";
+
+function BarDivider() {
+  return <div className="w-px h-5 bg-zinc-600/40 mx-1 shrink-0" />;
+}
+
+function MediaButton({
+  icon,
+  label,
+  enabled,
+  toggleProps,
+  tooltip,
+  devices,
+  onDeviceSelect,
+  deviceLabel,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  enabled: boolean;
+  toggleProps: React.ButtonHTMLAttributes<HTMLButtonElement>;
+  tooltip: string;
+  devices: MediaDeviceInfo[];
+  onDeviceSelect: (deviceId: string) => void;
+  deviceLabel: string;
+}) {
+  const { className: _, ...restToggle } = toggleProps;
+  return (
+    <div
+      className={`flex items-center w-24 shrink-0 rounded-xl transition-colors duration-150 ${
+        enabled ? ctrlOn : ctrlOff
+      }`}
+    >
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <button type="button" className={`${ctrlBtn} flex-1 min-w-0 px-2`} {...restToggle}>
+            {icon}
+            <span className="truncate">{label}</span>
+          </button>
+        </TooltipTrigger>
+        <TooltipContent side="top">{tooltip}</TooltipContent>
+      </Tooltip>
+      {devices.length > 0 && (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button
+              type="button"
+              className="h-9 w-5 flex items-center justify-center opacity-50 hover:opacity-100 transition-opacity pr-0.5"
+            >
+              <ChevronDown className="h-2.5 w-2.5" />
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent
+            align="start"
+            side="top"
+            className="max-h-64 overflow-y-auto subtle-scrollbar"
+          >
+            {devices.map((d, i) => (
+              <DropdownMenuItem
+                key={d.deviceId}
+                onClick={() => onDeviceSelect(d.deviceId)}
+              >
+                {d.label || `${deviceLabel} ${i + 1}`}
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      )}
+    </div>
+  );
+}
+
+function CustomControlBar({
+  settings,
+  canRecord,
+}: {
+  settings: MeetingSettings;
+  canRecord: boolean;
+}) {
+  const layoutContext = useMaybeLayoutContext();
+  const micToggle = useTrackToggle({ source: Track.Source.Microphone });
+  const camToggle = useTrackToggle({ source: Track.Source.Camera });
+  const screenShareToggle = useTrackToggle({
+    source: Track.Source.ScreenShare,
+  });
+  const { buttonProps: leaveButtonProps } = useDisconnectButton({});
+  const { className: _leaveCn, ...leaveProps } = leaveButtonProps;
+  const micDevices = useMediaDeviceSelect({ kind: "audioinput" });
+  const camDevices = useMediaDeviceSelect({ kind: "videoinput" });
+
+  const showChat = layoutContext?.widget.state?.showChat ?? false;
+  const unreadCount = layoutContext?.widget.state?.unreadMessages ?? 0;
+  const showUnreadDot = unreadCount > 0;
+  const toggleChat = () =>
+    layoutContext?.widget.dispatch?.({ msg: "toggle_chat" });
+
+  return (
+    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-30 flex items-center gap-1 rounded-2xl bg-zinc-900/80 backdrop-blur-xl border border-zinc-700/40 p-1.5 shadow-2xl shadow-black/50">
+      {settings.allowMic && (
+        <MediaButton
+          icon={
+            micToggle.enabled ? (
+              <Mic className="h-4 w-4" />
+            ) : (
+              <MicOff className="h-4 w-4" />
+            )
+          }
+          label="Mic"
+          enabled={micToggle.enabled}
+          toggleProps={micToggle.buttonProps}
+          tooltip="Toggle microphone"
+          devices={micDevices.devices}
+          onDeviceSelect={(id) => micDevices.setActiveMediaDevice(id)}
+          deviceLabel="Microphone"
+        />
+      )}
+
+      {settings.allowCamera && (
+        <MediaButton
+          icon={
+            camToggle.enabled ? (
+              <Video className="h-4 w-4" />
+            ) : (
+              <VideoOff className="h-4 w-4" />
+            )
+          }
+          label="Cam"
+          enabled={camToggle.enabled}
+          toggleProps={camToggle.buttonProps}
+          tooltip="Toggle camera"
+          devices={camDevices.devices}
+          onDeviceSelect={(id) => camDevices.setActiveMediaDevice(id)}
+          deviceLabel="Camera"
+        />
+      )}
+
+      {settings.allowScreenShare && (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button
+              type="button"
+              className={`${ctrlBtn} w-24 shrink-0 px-3 justify-center ${
+                screenShareToggle.enabled ? ctrlOn : ctrlOff
+              }`}
+              {...screenShareToggle.buttonProps}
+            >
+              <MonitorUp className="h-4 w-4 shrink-0" />
+              <span>Screen</span>
+            </button>
+          </TooltipTrigger>
+          <TooltipContent side="top">Share screen</TooltipContent>
+        </Tooltip>
+      )}
+
+      <BarDivider />
+
+      {settings.allowChat && (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button
+              type="button"
+              className={`${ctrlPill} relative ${showChat ? ctrlOn : ctrlOff}`}
+              onClick={toggleChat}
+              aria-pressed={showChat}
+              aria-label={showUnreadDot ? "Chat (unread messages)" : "Chat"}
+            >
+              <MessageSquare className="h-4 w-4" />
+              <span>Chat</span>
+              {showUnreadDot && (
+                <span
+                  className="absolute top-1.5 right-1.5 h-1.5 w-1.5 rounded-full bg-blue-500 ring-2 ring-zinc-900/80"
+                  aria-hidden
+                />
+              )}
+            </button>
+          </TooltipTrigger>
+          <TooltipContent side="top">Chat</TooltipContent>
+        </Tooltip>
+      )}
+
+      <RaiseHandBarButton />
+      {canRecord && <RecordButton />}
+
+      <BarDivider />
+
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <button
+            type="button"
+            className={`${ctrlPill} bg-red-600/90 text-white hover:bg-red-500`}
+            {...leaveProps}
+          >
+            <PhoneOff className="h-4 w-4" />
+            <span>Leave</span>
+          </button>
+        </TooltipTrigger>
+        <TooltipContent side="top">Leave meeting</TooltipContent>
+      </Tooltip>
+    </div>
+  );
+}
+
 function RaiseHandBarButton() {
   const { isHandRaised, toggleHand } = useRaisedHands();
 
   return (
-    <button
-      type="button"
-      onClick={toggleHand}
-      title={isHandRaised ? "Lower hand" : "Raise hand"}
-      className={`lk-button lk-button-toggle flex items-center justify-center rounded-md h-10 w-10 transition-colors ${
-        isHandRaised
-          ? "bg-sky-500/15 ring-2 ring-sky-400/60 hover:bg-sky-500/25 text-zinc-100"
-          : "text-zinc-400 hover:bg-[var(--lk-control-hover-bg)] hover:text-zinc-100"
-      }`}
-    >
-      <span className="text-lg leading-none">🤚</span>
-    </button>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <button
+          type="button"
+          onClick={toggleHand}
+          className={`${ctrlPill} ${
+            isHandRaised
+              ? "bg-sky-500/15 ring-1 ring-sky-400/50 hover:bg-sky-500/25 text-white"
+              : ctrlOff
+          }`}
+        >
+          <Hand className="h-4 w-4" />
+          <span>Hand</span>
+        </button>
+      </TooltipTrigger>
+      <TooltipContent side="top">Raise hand</TooltipContent>
+    </Tooltip>
   );
 }
 
@@ -427,7 +653,7 @@ function GrantMicPanel({ meetupId }: { meetupId: string }) {
             {hands.length}
           </span>
         </p>
-        <ul className="space-y-1.5 max-h-48 overflow-y-auto">
+        <ul className="space-y-1.5 max-h-48 overflow-y-auto subtle-scrollbar">
           {hands.map(([identity, displayName]) => (
             <li
               key={identity}
@@ -560,33 +786,30 @@ function RecordButton() {
   }, []);
 
   return (
-    <button
-      type="button"
-      onClick={recording ? stopRecording : startRecording}
-      title={recording ? "Stop recording" : "Record meeting"}
-      className={`lk-button lk-button-toggle flex items-center justify-center rounded-md h-10 w-10 transition-colors ${
-        recording
-          ? "bg-red-500/20 text-red-400 hover:bg-red-500/30"
-          : "text-zinc-400 hover:bg-[var(--lk-control-hover-bg)] hover:text-zinc-100"
-      }`}
-    >
-      {recording ? (
-        <span className="block h-3.5 w-3.5 rounded-sm bg-red-500" />
-      ) : (
-        <svg
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth={2}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          className="h-5 w-5"
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <button
+          type="button"
+          onClick={recording ? stopRecording : startRecording}
+          className={`${ctrlPill} ${
+            recording
+              ? "bg-red-500/20 text-red-400 hover:bg-red-500/30"
+              : ctrlOff
+          }`}
         >
-          <circle cx="12" cy="12" r="10" />
-          <circle cx="12" cy="12" r="4" fill="currentColor" stroke="none" />
-        </svg>
-      )}
-    </button>
+          {recording ? (
+            <span className="block h-3 w-3 rounded-sm bg-red-500 shrink-0" />
+          ) : (
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4 shrink-0">
+              <circle cx="12" cy="12" r="10" />
+              <circle cx="12" cy="12" r="4" fill="currentColor" stroke="none" />
+            </svg>
+          )}
+          <span>{recording ? "Stop" : "Rec"}</span>
+        </button>
+      </TooltipTrigger>
+      <TooltipContent side="top">{recording ? "Stop recording" : "Record meeting"}</TooltipContent>
+    </Tooltip>
   );
 }
 

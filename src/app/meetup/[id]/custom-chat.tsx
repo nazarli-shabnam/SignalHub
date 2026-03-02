@@ -1,13 +1,13 @@
 "use client";
 
-import { useRef, useEffect, useMemo, type KeyboardEvent } from "react";
+import { useRef, useEffect, useMemo, useState, type KeyboardEvent } from "react";
 import {
   ChatEntry,
-  ChatToggle,
   useChat,
   useMaybeLayoutContext,
 } from "@livekit/components-react";
 import type { ChatMessage, ChatOptions } from "@livekit/components-core";
+import { X, Send } from "lucide-react";
 
 type Props = React.HTMLAttributes<HTMLDivElement> & ChatOptions;
 
@@ -28,6 +28,7 @@ export function CustomChat({
   const { chatMessages, send, isSending } = useChat(chatOptions);
   const layoutContext = useMaybeLayoutContext();
   const lastReadMsgAt = useRef<ChatMessage["timestamp"]>(0);
+  const [hasText, setHasText] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -36,6 +37,7 @@ export function CustomChat({
     await send(textarea.value);
     textarea.value = "";
     textarea.style.height = "auto";
+    setHasText(false);
     textarea.focus();
   }
 
@@ -50,8 +52,12 @@ export function CustomChat({
   function handleInput() {
     const el = textareaRef.current;
     if (!el) return;
+    setHasText(el.value.trim().length > 0);
     el.style.height = "auto";
-    el.style.height = `${Math.min(el.scrollHeight, 96)}px`;
+    const max = 96;
+    const next = Math.min(el.scrollHeight, max);
+    el.style.height = `${next}px`;
+    el.style.overflowY = el.scrollHeight > max ? "auto" : "hidden";
   }
 
   useEffect(() => {
@@ -67,6 +73,9 @@ export function CustomChat({
       lastReadMsgAt.current !== chatMessages[chatMessages.length - 1]?.timestamp
     ) {
       lastReadMsgAt.current = chatMessages[chatMessages.length - 1]?.timestamp;
+      if (layoutContext.widget.state?.unreadMessages !== 0) {
+        layoutContext.widget.dispatch?.({ msg: "unread_msg", count: 0 });
+      }
       return;
     }
 
@@ -81,17 +90,36 @@ export function CustomChat({
   }, [chatMessages, layoutContext?.widget]);
 
   return (
-    <div {...props} className="lk-chat">
-      <div className="lk-chat-header">
-        Messages
+    <div
+      {...props}
+      className="flex flex-col w-80 shrink-0 border-l border-zinc-800 bg-[#0f0f11]"
+    >
+      <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-800/60 shrink-0">
+        <h3 className="text-sm font-semibold text-zinc-200 tracking-tight">
+          Messages
+        </h3>
         {layoutContext && (
-          <ChatToggle className="lk-close-button">
-            <CloseIcon />
-          </ChatToggle>
+          <button
+            type="button"
+            onClick={() =>
+              layoutContext.widget.dispatch?.({ msg: "toggle_chat" })
+            }
+            className="text-zinc-500 hover:text-zinc-200 transition-colors p-1 -mr-1 rounded-lg hover:bg-zinc-800/60"
+          >
+            <X className="h-4 w-4" />
+          </button>
         )}
       </div>
 
-      <ul className="lk-list lk-chat-messages" ref={listRef}>
+      <ul
+        className="lk-list lk-chat-messages flex-1 min-h-0 overflow-y-auto"
+        ref={listRef}
+      >
+        {chatMessages.length === 0 && (
+          <li className="flex items-center justify-center h-full text-zinc-600 text-xs select-none">
+            No messages yet
+          </li>
+        )}
         {chatMessages.map((msg, idx, all) => {
           const hideName = idx >= 1 && all[idx - 1].from === msg.from;
           const hideTimestamp =
@@ -107,43 +135,41 @@ export function CustomChat({
         })}
       </ul>
 
-      <form className="lk-chat-form" onSubmit={handleSubmit}>
-        <textarea
-          ref={textareaRef}
-          className="lk-form-control lk-chat-form-input"
-          disabled={isSending}
-          placeholder="Enter a message..."
-          rows={1}
-          onKeyDown={handleKeyDown}
-          onInput={handleInput}
-        />
-        <button
-          type="submit"
-          className="lk-button lk-chat-form-button"
-          disabled={isSending}
-        >
-          Send
-        </button>
+      <form
+        className="p-3 border-t border-zinc-800/60 shrink-0"
+        onSubmit={handleSubmit}
+      >
+        <div className="flex items-end gap-2">
+          <textarea
+            ref={textareaRef}
+            className="flex-1 rounded-xl bg-zinc-800/80 border border-zinc-700/40 px-3 py-2 text-sm text-zinc-200 placeholder:text-zinc-500 resize-none focus:outline-none focus:border-zinc-600 transition-colors no-scrollbar"
+            style={{
+              minHeight: "36px",
+              maxHeight: "96px",
+              overflowY: "hidden",
+              overflowWrap: "break-word",
+              wordBreak: "break-word",
+              lineHeight: "1.4",
+            }}
+            disabled={isSending}
+            placeholder="Type a message..."
+            rows={1}
+            onKeyDown={handleKeyDown}
+            onInput={handleInput}
+          />
+          <button
+            type="submit"
+            disabled={isSending || !hasText}
+            className={`shrink-0 h-9 w-9 rounded-xl flex items-center justify-center transition-all duration-150 ${
+              hasText && !isSending
+                ? "bg-emerald-600 text-white hover:bg-emerald-500"
+                : "bg-zinc-800/60 text-zinc-600"
+            }`}
+          >
+            <Send className="h-4 w-4" />
+          </button>
+        </div>
       </form>
     </div>
-  );
-}
-
-function CloseIcon() {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      width="16"
-      height="16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <line x1="18" y1="6" x2="6" y2="18" />
-      <line x1="6" y1="6" x2="18" y2="18" />
-    </svg>
   );
 }
